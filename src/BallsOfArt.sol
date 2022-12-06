@@ -40,22 +40,54 @@ contract BallsOfArt is ERC721, Ownable {
         pure
         returns (string memory)
     {
-        string[3] memory bgColors = [
+        string[7] memory bgColors = [
             "#ffffff",
             "#F1F1F1",
-            "#EEF6FF"
-          
+            "#EEF6FF",
+            "#FCF8E8",
+            "#EEF1FF",
+            "#FFFDE3",
+            "#2C3639"
         ];
         return bgColors[index];
     }
 
     // Return a random ball color
     function ballColors(uint index) internal pure returns (string memory) {
-        string[3] memory bColors = [
+        string[33] memory bColors = [
             "#1eafed",
             "#25316D",
-            "#325fa3"
-            
+            "#325fa3",
+            "#367E18",
+            "#38e27d",
+            "#400D51",
+            "#5d67c1",
+            "#7294d4",
+            "#A1C298",
+            "#CC3636",
+            "#F07DEA",
+            "#F637EC",
+            "#FA7070",
+            "#a74f6c",
+            "#c2c2d0",
+            "#cc0e74",
+            "#e5c37a",
+            "#e6a0c4",
+            "#e8185d",
+            "#4bbe9d",
+            "#fb97b3",
+            "#ff0000",
+            "#000007",
+            "#2A0944",
+            "#3330E4",
+            "#5bbcd6",
+            "#74275c",
+            "#8758FF",
+            "#96ac92",
+            "#9c65ca",
+            "#D800A6",
+            "#F57328",
+            "#FECD70"
         ];
         return bColors[index];
     }
