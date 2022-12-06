@@ -4,6 +4,9 @@
 // @author   Radek Sienkiewicz | velvetshark.com
 pragma solidity 0.8.17;
 
+// contract that creates on-chain generative art
+// Art is randomized each mint
+// deployed to 0x93157221d4A53aE7705cBbf2e485dD777EA9C55F
 import "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "node_modules/@openzeppelin/contracts/utils/Base64.sol";
