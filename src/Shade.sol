@@ -4,36 +4,33 @@
 // @author   Radek Sienkiewicz | velvetshark.com
 pragma solidity 0.8.17;
 
-// contract that creates on-chain generative art
-// Art is randomized each mint
-// deployed to 0x93157221d4A53aE7705cBbf2e485dD777EA9C55F
-import "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "node_modules/@openzeppelin/contracts/access/Ownable.sol";
-import "node_modules/@openzeppelin/contracts/utils/Base64.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
-contract BallsOfArt is ERC721, Ownable {
+contract Shade is ERC721, Ownable {
     // Structs
-    struct Ball {
+    struct Rectangle {
         uint x; // x coordinates of the top left corner
         uint y; // y coordinates of the top left corner
         uint width;
         uint height;
-        string fill; // ball color
+        string border; // ball color
         uint randomSeed;
     }
 
     // Constants, public variables
     uint constant maxSupply = 111; // max number of tokens
     uint public totalSupply = 0; // number of tokens minted
-    uint public mintPrice = 0.003 ether;
+    uint public mintPrice = 0.0000001 ether;
 
     // Mapping to store SVG code for each token
     mapping(uint => string) private tokenIdToSvg;
 
     // Events
-    event BallsCreated(uint indexed tokenId);
+    event ShadeCreated(uint indexed tokenId);
 
-    constructor() ERC721("Balls of Art", "BART") {}
+    constructor() ERC721("Shade", "SHADE") {}
 
     // Functions
 
@@ -43,79 +40,53 @@ contract BallsOfArt is ERC721, Ownable {
         pure
         returns (string memory)
     {
-        string[7] memory bgColors = [
-            "#ffffff",
-            "#F1F1F1",
-            "#EEF6FF",
-            "#FCF8E8",
-            "#EEF1FF",
-            "#FFFDE3",
-            "#2C3639"
+        string[3] memory bgColors = [
+            "#000000",
+            "#FFFFFF",
+            "#808080"
         ];
         return bgColors[index];
     }
 
     // Return a random ball color
-    function ballColors(uint index) internal pure returns (string memory) {
-        string[33] memory bColors = [
-            "#1eafed",
-            "#25316D",
-            "#325fa3",
-            "#367E18",
-            "#38e27d",
-            "#400D51",
-            "#5d67c1",
-            "#7294d4",
-            "#A1C298",
-            "#CC3636",
-            "#F07DEA",
-            "#F637EC",
-            "#FA7070",
-            "#a74f6c",
-            "#c2c2d0",
-            "#cc0e74",
-            "#e5c37a",
-            "#e6a0c4",
-            "#e8185d",
-            "#4bbe9d",
-            "#fb97b3",
-            "#ff0000",
-            "#000007",
-            "#2A0944",
-            "#3330E4",
-            "#5bbcd6",
-            "#74275c",
-            "#8758FF",
-            "#96ac92",
-            "#9c65ca",
-            "#D800A6",
-            "#F57328",
-            "#FECD70"
+    function RectangleColors(uint index) internal pure returns (string memory) {
+        string[10] memory bColors = [
+            "#2F2F2F",
+            "#505050",
+            "#777777",
+            "#A8A8A8",
+            "#333333",
+            "#5C5C5C",
+            "#CFCFCF",
+            "#AFAFAF",
+            "#1F1F1F",
+            "#B7B7B7"
+
         ];
         return bColors[index];
     }
 
     // Create an instance of a Ball
-    function createBallStruct(
+    function createRectangleStruct(
         uint x,
         uint y,
         uint width,
         uint height,
         uint randomSeed
-    ) internal pure returns (Ball memory) {
+    ) internal pure returns (Rectangle memory) {
         return
-            Ball({
+            Rectangle({
                 x: x,
                 y: y,
                 width: width,
                 height: height,
-                fill: ballColors(randomSeed % 33), // Choose random color from bColors array
+                border: RectangleColors(randomSeed % 4), // Choose random color from bColors array
                 randomSeed: randomSeed
             });
     }
 
     // Randomly picka a ball size: 1, 2, or 3x
-    function drawBallSize(uint maxSize, uint randomSeed)
+    function drawRectangleSize(uint maxSize, uint randomSeed)
         public
         pure
         returns (uint size)
@@ -147,29 +118,34 @@ contract BallsOfArt is ERC721, Ownable {
         }
     }
 
-    // SVG code for a single ball
-    function ballSvg(Ball memory ball) public pure returns (string memory) {
+function RectangleSvg(Rectangle memory rectangle) public pure returns (string memory) {
         return
             string(
                 abi.encodePacked(
                     '<rect x="',
-                    uint2str(ball.x),
+                    uint2str(rectangle.x),
                     '" y="',
-                    uint2str(ball.y),
+                    uint2str(rectangle.y),
                     '" width="',
-                    uint2str(ball.width),
+                    uint2str(rectangle.width),
                     '" height="',
-                    uint2str(ball.height),
+                    uint2str(rectangle.height),
                     '" fill="',
-                    ball.fill,
-                    '" rx="150" /> <path fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" d="M ',
-                    uint2str(ball.x + ball.width - 150),
+                    rectangle.border,
+                    '" /> <path fill="none" stroke="#ffffff" stroke-width="6"  d="M ',
+                    uint2str(rectangle.x + rectangle.width - 150),
                     " ",
-                    uint2str(ball.y + ball.height - 50),
-                    " A 100 100 0 0 0 ",
-                    uint2str(ball.x + ball.width - 50),
+                    uint2str(rectangle.y + rectangle.height - 50),
+                    " L ",
+                    uint2str(rectangle.x + rectangle.width - 50),
                     " ",
-                    uint2str(ball.y + ball.height - 150),
+                    uint2str(rectangle.y + rectangle.height - 50),
+                    " L ",
+                    uint2str(rectangle.x + rectangle.width - 50),
+                    " ",
+                    uint2str(rectangle.y + rectangle.height - 150),
+                    " L ",
+                    uint2str(rectangle.x + rectangle.width - 150),
                     '" />'
                 )
             );
@@ -192,29 +168,29 @@ contract BallsOfArt is ERC721, Ownable {
         }
 
         // Size of ball at slot 1
-        uint ballSize1 = drawBallSize(3, randomSeed);
+        uint rectangleSize1 = drawRectangleSize(3, randomSeed);
         // console.log("Ball size 1: ", ballSize1);
 
         // Ball size 1x? Paint 1x at slot 1
-        if (ballSize1 == 1) {
-            Ball memory ball1 = createBallStruct(150, y, 300, 300, randomSeed);
-            lineSvg = string.concat(lineSvg, ballSvg(ball1));
+        if (rectangleSize1 == 1) {
+            Rectangle memory rectangle1 = createRectangleStruct(150, y, 300, 300, randomSeed);
+            lineSvg = string.concat(lineSvg, RectangleSvg(rectangle1));
 
             // Slot 2
             // Size of ball at slot 2
-            uint ballSize2 = drawBallSize(2, randomSeed >> 1);
+            uint rectangleSize2 = drawRectangleSize(2, randomSeed >> 1);
             // console.log("Ball size 2: ", ballSize2);
 
             // Ball size 1x? Paint 1x at slot 2 and 1x at slot 3
-            if (ballSize2 == 1) {
-                Ball memory ball2 = createBallStruct(
+            if (rectangleSize2 == 1) {
+                Rectangle memory rectangle2 = createRectangleStruct(
                     475,
                     y,
                     300,
                     300,
                     randomSeed >> 2
                 );
-                Ball memory ball3 = createBallStruct(
+                Rectangle memory rectangle3 = createRectangleStruct(
                     800,
                     y,
                     300,
@@ -223,77 +199,76 @@ contract BallsOfArt is ERC721, Ownable {
                 );
                 lineSvg = string.concat(
                     lineSvg,
-                    ballSvg(ball2),
-                    ballSvg(ball3)
+                    RectangleSvg(rectangle2),
+                    RectangleSvg(rectangle3)
                 );
 
                 // Ball size 2x? Paint 2x at slot 2
-            } else if (ballSize2 == 2) {
-                Ball memory ball2 = createBallStruct(
+            } else if (rectangleSize2 == 2) {
+                Rectangle memory rectangle2 = createRectangleStruct(
                     475,
                     y,
                     625,
                     300,
                     randomSeed >> 4
                 );
-                lineSvg = string.concat(lineSvg, ballSvg(ball2));
+                lineSvg = string.concat(lineSvg, RectangleSvg(rectangle2));
             }
 
             // Ball size 2x? Paint 2x at slot 1 and 1x at slot 3
-        } else if (ballSize1 == 2) {
-            Ball memory ball1 = createBallStruct(
+        } else if (rectangleSize1 == 2) {
+            Rectangle memory rectangle1 = createRectangleStruct(
                 150,
                 y,
                 625,
                 300,
                 randomSeed >> 5
             );
-            Ball memory ball3 = createBallStruct(
+            Rectangle memory rectangle3 = createRectangleStruct(
                 800,
                 y,
                 300,
                 300,
                 randomSeed >> 6
             );
-            lineSvg = string.concat(lineSvg, ballSvg(ball1), ballSvg(ball3));
+            lineSvg = string.concat(lineSvg, RectangleSvg(rectangle1), RectangleSvg(rectangle3));
 
             // Ball size 3x? Paint 3x at slot 1
-        } else if (ballSize1 == 3) {
-            Ball memory ball1 = createBallStruct(
+        } else if (rectangleSize1 == 3) {
+            Rectangle memory rectangle1 = createRectangleStruct(
                 150,
                 y,
                 950,
                 300,
                 randomSeed >> 7
             );
-            lineSvg = string.concat(lineSvg, ballSvg(ball1));
+            lineSvg = string.concat(lineSvg, RectangleSvg(rectangle1));
         }
 
         return lineSvg;
     }
 
-    // Draw animated eyes
-    function drawEyes(uint eyesLocation) internal pure returns (string memory) {
+       function drawCircle(uint circleLocation) internal pure returns (string memory) {
         // Bottom-right location by default
-        uint y1 = 930;
-        uint y2 = 980;
+        uint x = 980;
+        uint y = 980;
 
-        if (eyesLocation == 1) {
-            y1 = 280;
-            y2 = 330;
-        } else if (eyesLocation == 2) {
-            y1 = 605;
-            y2 = 655;
+          if (circleLocation == 1) {
+            x = 300;
+            y = 300;
+       } else if (circleLocation == 2) {
+            x = 605;
+            y = 605;
         } // Location 3 skipped because it's set up as default already, and only changed if location is 1 or 2
 
         return
             string(
                 abi.encodePacked(
-                    '<rect x="980" y="',
-                    uint2str(y1),
-                    '" width="30" height="30" fill="#ffffff" rx="15"><animate attributeType="XML" attributeName="fill" values="#ffffff00;#ffffff00;#ffffff00;#ffffff00;#ffffff00;#ffffff;#ffffff00;#ffffff00;#ffffff00;#ffffff00;" dur="10s" repeatCount="indefinite"/></rect><rect x="930" y="',
-                    uint2str(y2),
-                    '" width="30" height="30" fill="#ffffff" rx="15"><animate attributeType="XML" attributeName="fill" values="#ffffff00;#ffffff00;#ffffff00;#ffffff00;#ffffff00;#ffffff;#ffffff00;#ffffff00;#ffffff00;#ffffff00;" dur="10s" repeatCount="indefinite"/></rect>'
+                    '<circle cx="',
+                    uint2str(x),
+                    '" cy="',
+                    uint2str(y),
+                    '" r="40" fill="#ffffff"><animate attributeType="XML" attributeName="fill" values="#ffffff00;#ffffff00;#ffffff00;#ffffff00;#ffffff00;#ffffff;#ffffff00;#ffffff00;#ffffff00;#ffffff00;" dur="2s" repeatCount="indefinite"/></circle>'
                 )
             );
     }
@@ -302,16 +277,18 @@ contract BallsOfArt is ERC721, Ownable {
     function generateFinalSvg(
         uint randomSeed1,
         uint randomSeed2,
-        uint randomSeed3
+        uint randomSeed3,
+        uint randomSeed4
     ) public pure returns (string memory) {
         bytes memory backgroundCode = abi.encodePacked(
+            // SVG SIZE
             '<rect width="1250" height="1250" fill="',
-            backgroundColors(randomSeed1 % 7),
+            backgroundColors(randomSeed1 % 3),
             '" />'
         );
 
-        // Which line will contain the eyes
-        uint eyesLocation = (randomSeed1 % 3) + 1;
+        // Which line will contain the circle
+        uint circleLocation = (randomSeed1 % 3) + 1;
 
         // SVG opening and closing tags, background color + 3 lines generated
         string memory finalSvg = string(
@@ -321,7 +298,8 @@ contract BallsOfArt is ERC721, Ownable {
                 generateLineSvg(1, randomSeed1),
                 generateLineSvg(2, randomSeed2),
                 generateLineSvg(3, randomSeed3),
-                drawEyes(eyesLocation),
+                generateLineSvg(4, randomSeed4),
+                drawCircle(circleLocation),
                 "</svg>"
             )
         );
@@ -346,9 +324,9 @@ contract BallsOfArt is ERC721, Ownable {
                     Base64.encode(
                         bytes(
                             abi.encodePacked(
-                                '{"name": "Balls of Art #',
+                                '{"name": "Shade #',
                                 uint2str(tokenId),
-                                '", "description": "Balls of Art are an assortment of 111 fully on-chain, randomly generated, happy art balls", "attributes": "", "image":"data:image/svg+xml;base64,',
+                                '", "description": "The Shade collection an assortment of 111 fully on-chain, randomly generated, shades", "attributes": "", "image":"data:image/svg+xml;base64,',
                                 Base64.encode(bytes(tokenIdToSvg[tokenId])),
                                 '"}'
                             )
@@ -359,7 +337,7 @@ contract BallsOfArt is ERC721, Ownable {
     }
 
     // Mint new Balls of Art
-    function mintBallsOfArt(uint tokenId) public payable {
+    function mintNinetyNFT(uint tokenId) public payable {
         // Require token ID to be between 1 and maxSupply (111)
         require(tokenId > 0 && tokenId <= maxSupply, "Token ID invalid");
 
@@ -375,11 +353,16 @@ contract BallsOfArt is ERC721, Ownable {
         uint randomSeed3 = uint(
             keccak256(abi.encodePacked(msg.sender, block.timestamp))
         );
+        uint randomSeed4 = uint(
+            keccak256(abi.encodePacked(msg.sender, block.timestamp))
+        );
+    
 
         tokenIdToSvg[tokenId] = generateFinalSvg(
             randomSeed1,
             randomSeed2,
-            randomSeed3
+            randomSeed3,
+            randomSeed4
         );
 
         // Mint token
@@ -388,7 +371,7 @@ contract BallsOfArt is ERC721, Ownable {
         // Increase minted tokens counter
         ++totalSupply;
 
-        emit BallsCreated(tokenId);
+        emit ShadeCreated(tokenId);
     }
 
     // Withdraw funds from the contract
