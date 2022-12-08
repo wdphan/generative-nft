@@ -1,10 +1,8 @@
 //SPDX-License-Identifier: MIT
-// @title    Balls of Art
+// @title   Shade
 // @version  1.0.0
-// @author   Radek Sienkiewicz | velvetshark.com
+// @author   William Phan
 pragma solidity 0.8.17;
-
-// Deployed to: 0xC6EA7EDeC54BEf4B53968C2162d141Fa4FA79594
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -17,20 +15,22 @@ contract Shade is ERC721, Ownable {
         uint y; // y coordinates of the top left corner
         uint width;
         uint height;
-        string border; // ball color
+        string border; // Shade COlor
         uint randomSeed;
     }
 
     // Constants, public variables
     uint constant maxSupply = 111; // max number of tokens
     uint public totalSupply = 0; // number of tokens minted
-    uint public mintPrice = 0.0000001 ether;
+  
 
     // Mapping to store SVG code for each token
     mapping(uint => string) private tokenIdToSvg;
 
     // Events
     event ShadeCreated(uint indexed tokenId);
+
+    receive() external payable {}
 
     constructor() ERC721("Shade", "SHADE") {}
 
@@ -339,12 +339,9 @@ function RectangleSvg(Rectangle memory rectangle) public pure returns (string me
     }
 
     // Mint new Balls of Art
-    function mintNinetyNFT(uint tokenId) public payable {
+    function mintShadeNFT(uint tokenId) public payable {
         // Require token ID to be between 1 and maxSupply (111)
         require(tokenId > 0 && tokenId <= maxSupply, "Token ID invalid");
-
-        // Make sure the amount of ETH is equal or larger than the minimum mint price
-        require(msg.value >= mintPrice, "Not enough ETH sent");
 
         uint randomSeed1 = uint(
             keccak256(abi.encodePacked(block.basefee, block.timestamp))
